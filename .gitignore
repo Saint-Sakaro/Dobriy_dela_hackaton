@@ -2,7 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
-ml/data/
+
+# ML - игнорируем только временные файлы, модели добавляем через Git LFS
+# ml/data/models/ - модели должны быть в репозитории через Git LFS
 
 # Django
 db.sqlite3
