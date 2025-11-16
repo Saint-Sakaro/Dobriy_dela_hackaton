@@ -27,6 +27,7 @@ class User(AbstractUser):
         related_name="users",
     )
     phone = models.CharField(max_length=32, blank=True)
+    avatar = models.ImageField(upload_to="users/avatars/", blank=True, null=True)
 
     class Meta:
         verbose_name = "Пользователь"

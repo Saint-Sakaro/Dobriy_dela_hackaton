@@ -21,12 +21,14 @@ class EventSerializer(serializers.ModelSerializer):
     category_ids = serializers.PrimaryKeyRelatedField(
         queryset=ActivityCategory.objects.all(), source="categories", many=True, write_only=True, required=False
     )
+    cover_file_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Event
         fields = [
             "id",
             "title",
+            "slug",
             "description",
             "city",
             "city_id",
@@ -36,12 +38,23 @@ class EventSerializer(serializers.ModelSerializer):
             "end_at",
             "venue",
             "registration_url",
+            "cover_image",
+            "cover_file",
+            "cover_file_url",
             "status",
             "categories",
             "category_ids",
             "is_featured",
         ]
-        read_only_fields = ("status", "is_featured")
+        read_only_fields = ("status", "is_featured", "slug", "registration_url", "cover_file_url")
+
+    def get_cover_file_url(self, obj):
+        if obj.cover_file:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.cover_file.url)
+            return obj.cover_file.url
+        return None
 
 
 class EventRegistrationSerializer(serializers.ModelSerializer):

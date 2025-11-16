@@ -9,6 +9,11 @@ class NewsItemViewSet(viewsets.ModelViewSet):
     serializer_class = NewsItemSerializer
     lookup_field = "slug"
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
     def get_queryset(self):
         qs = NewsItem.objects.all()
         if not self.request.user.is_authenticated or not self.request.user.is_moderator:

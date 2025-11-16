@@ -19,6 +19,7 @@ class NewsItem(TimeStampedModel):
         related_name="news",
     )
     cover_image = models.URLField(blank=True)
+    cover_file = models.FileField(upload_to="news/covers/", blank=True, null=True, help_text="Может быть изображение или видео")
     attachment_url = models.URLField(blank=True)
     published_at = models.DateTimeField(null=True, blank=True)
     author = models.ForeignKey(

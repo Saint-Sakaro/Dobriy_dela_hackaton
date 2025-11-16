@@ -29,6 +29,7 @@ class Material(TimeStampedModel):
     body = models.TextField(blank=True)
     file_url = models.URLField(blank=True)
     cover_image = models.URLField(blank=True)
+    cover_file = models.FileField(upload_to="materials/covers/", blank=True, null=True, help_text="Может быть изображение или видео")
     type = models.CharField(
         max_length=32, choices=MaterialType.choices, default=MaterialType.ARTICLE
     )

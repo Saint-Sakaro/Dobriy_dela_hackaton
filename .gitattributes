@@ -1,0 +1,22 @@
+# Git LFS для больших файлов
+*.safetensors filter=lfs diff=lfs merge=lfs -text
+*.bin filter=lfs diff=lfs merge=lfs -text
+*.pkl filter=lfs diff=lfs merge=lfs -text
+*.index filter=lfs diff=lfs merge=lfs -text
+*.model filter=lfs diff=lfs merge=lfs -text
+*.h5 filter=lfs diff=lfs merge=lfs -text
+*.ckpt filter=lfs diff=lfs merge=lfs -text
+*.pt filter=lfs diff=lfs merge=lfs -text
+*.pth filter=lfs diff=lfs merge=lfs -text
+
+# ML модели
+ml/data/models/**/*.safetensors filter=lfs diff=lfs merge=lfs -text
+ml/data/models/**/*.bin filter=lfs diff=lfs merge=lfs -text
+ml/data/models/**/*.pkl filter=lfs diff=lfs merge=lfs -text
+ml/data/models/**/*.index filter=lfs diff=lfs merge=lfs -text
+
+# Большие медиа файлы (опционально)
+*.mp4 filter=lfs diff=lfs merge=lfs -text
+*.mov filter=lfs diff=lfs merge=lfs -text
+*.avi filter=lfs diff=lfs merge=lfs -text
+

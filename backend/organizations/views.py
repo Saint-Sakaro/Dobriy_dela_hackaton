@@ -53,8 +53,14 @@ class OrganizationViewSet(viewsets.ModelViewSet):
             return [IsOwnerOrModerator()]
         return super().get_permissions()
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
     def perform_create(self, serializer):
-        serializer.save(owner=self.request.user, status=Organization.Status.DRAFT)
+        # При создании НКО сразу отправляем на модерацию
+        serializer.save(owner=self.request.user, status=Organization.Status.PENDING)
 
     @action(detail=True, methods=["post"])
     def submit(self, request, slug=None):

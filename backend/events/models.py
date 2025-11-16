@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.text import slugify
 
 from common.models import TimeStampedModel
 
@@ -11,6 +12,7 @@ class Event(TimeStampedModel):
         ARCHIVED = "archived", "Архив"
 
     title = models.CharField(max_length=255)
+    slug = models.SlugField(max_length=300, unique=True, blank=True)
     description = models.TextField()
     city = models.ForeignKey(
         "locations.City",
@@ -35,6 +37,8 @@ class Event(TimeStampedModel):
     end_at = models.DateTimeField()
     venue = models.CharField(max_length=255, blank=True)
     registration_url = models.URLField(blank=True)
+    cover_image = models.URLField(blank=True)
+    cover_file = models.ImageField(upload_to="events/covers/", blank=True, null=True)
     status = models.CharField(
         max_length=20,
         choices=EventStatus.choices,
@@ -51,6 +55,21 @@ class Event(TimeStampedModel):
         ordering = ["start_at"]
         verbose_name = "Событие"
         verbose_name_plural = "События"
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)
+            slug = base_slug
+            counter = 1
+            while Event.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        # Автоматически генерируем registration_url, если он не указан
+        if not self.registration_url and self.slug:
+            # Используем относительный URL, фронтенд добавит базовый путь
+            self.registration_url = f"/calendar/event/{self.slug}"
+        super().save(*args, **kwargs)
 
     def __str__(self) -> str:
         return self.title

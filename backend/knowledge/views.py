@@ -15,6 +15,11 @@ class MaterialCategoryViewSet(viewsets.ReadOnlyModelViewSet):
 class MaterialViewSet(viewsets.ModelViewSet):
     serializer_class = MaterialSerializer
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
     def get_queryset(self):
         qs = Material.objects.all()
         if not self.request.user.is_authenticated:

@@ -44,7 +44,9 @@ class Organization(TimeStampedModel):
     vk_link = models.URLField(blank=True)
     telegram_link = models.URLField(blank=True)
     logo_url = models.URLField(blank=True)
+    logo_file = models.ImageField(upload_to="organizations/logos/", blank=True, null=True)
     cover_image = models.URLField(blank=True)
+    cover_file = models.FileField(upload_to="organizations/covers/", blank=True, null=True, help_text="Может быть изображение или видео")
     is_featured = models.BooleanField(default=False)
 
     class Meta:
@@ -54,7 +56,13 @@ class Organization(TimeStampedModel):
 
     def save(self, *args, **kwargs):
         if not self.slug:
-            self.slug = slugify(self.name)
+            base_slug = slugify(self.name)
+            slug = base_slug
+            counter = 1
+            while Organization.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
         super().save(*args, **kwargs)
 
     def __str__(self) -> str:

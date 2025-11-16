@@ -24,7 +24,7 @@ class RegisterView(APIView):
         user = serializer.save()
         token, _ = Token.objects.get_or_create(user=user)
         return Response(
-            {"token": token.key, "user": UserSerializer(user).data},
+            {"token": token.key, "user": UserSerializer(user, context={"request": request}).data},
             status=status.HTTP_201_CREATED,
         )
 
@@ -37,7 +37,7 @@ class LoginView(APIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.validated_data["user"]
         token, _ = Token.objects.get_or_create(user=user)
-        return Response({"token": token.key, "user": UserSerializer(user).data})
+        return Response({"token": token.key, "user": UserSerializer(user, context={"request": request}).data})
 
 
 class VKLoginView(APIView):
@@ -92,7 +92,7 @@ class VKLoginView(APIView):
                 user.save()
 
             token, _ = Token.objects.get_or_create(user=user)
-            return Response({"token": token.key, "user": UserSerializer(user).data})
+            return Response({"token": token.key, "user": UserSerializer(user, context={"request": request}).data})
         except requests.RequestException as e:
             return Response({"detail": f"Ошибка при обращении к VK API: {str(e)}"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         except Exception as e:
@@ -111,13 +111,15 @@ class MeView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request):
-        return Response(UserSerializer(request.user).data)
+        serializer = UserSerializer(request.user, context={"request": request})
+        return Response(serializer.data)
 
     def patch(self, request):
         serializer = UserProfileSerializer(request.user, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()
-        return Response(UserSerializer(request.user).data)
+        user_serializer = UserSerializer(request.user, context={"request": request})
+        return Response(user_serializer.data)
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):

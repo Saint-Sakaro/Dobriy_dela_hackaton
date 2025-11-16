@@ -13,6 +13,7 @@ from .models import Favorite, User
 class UserSerializer(serializers.ModelSerializer):
     city_name = serializers.CharField(source="city.name", read_only=True)
     city_slug = serializers.CharField(source="city.slug", read_only=True)
+    avatar_url = serializers.SerializerMethodField()
 
     class Meta:
         model = User
@@ -27,9 +28,19 @@ class UserSerializer(serializers.ModelSerializer):
             "city_name",
             "city_slug",
             "phone",
+            "avatar",
+            "avatar_url",
             "date_joined",
         )
-        read_only_fields = ("username", "role", "date_joined")
+        read_only_fields = ("username", "role", "date_joined", "avatar_url")
+
+    def get_avatar_url(self, obj):
+        if obj.avatar:
+            request = self.context.get("request")
+            if request:
+                return request.build_absolute_uri(obj.avatar.url)
+            return obj.avatar.url
+        return None
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
@@ -41,6 +52,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
             "email",
             "city",
             "phone",
+            "avatar",
         )
 
 

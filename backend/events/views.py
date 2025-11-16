@@ -10,8 +10,12 @@ from .serializers import EventRegistrationSerializer, EventSerializer
 
 class EventViewSet(viewsets.ModelViewSet):
     serializer_class = EventSerializer
+    lookup_field = "slug"
 
     def get_queryset(self):
+        from django.utils import timezone
+        from datetime import datetime
+        
         qs = Event.objects.all()
         if self.action in {"list", "retrieve"} and not self.request.user.is_authenticated:
             qs = qs.filter(status=Event.EventStatus.PUBLISHED)
@@ -36,6 +40,35 @@ class EventViewSet(viewsets.ModelViewSet):
         search = self.request.query_params.get("search")
         if search:
             qs = qs.filter(title__icontains=search)
+        # Фильтрация по месяцу и году
+        month = self.request.query_params.get("month")
+        year = self.request.query_params.get("year")
+        if month and year:
+            try:
+                month_int = int(month)
+                year_int = int(year)
+                # Вычисляем начало и конец месяца
+                from calendar import monthrange
+                _, last_day = monthrange(year_int, month_int)
+                month_start = datetime(year_int, month_int, 1, 0, 0, 0)
+                month_end = datetime(year_int, month_int, last_day, 23, 59, 59)
+                # Фильтруем события, которые пересекаются с указанным месяцем
+                # Событие попадает в месяц, если оно начинается или заканчивается в этом месяце,
+                # или если оно охватывает весь месяц
+                qs = qs.filter(
+                    models.Q(
+                        start_at__year=year_int,
+                        start_at__month=month_int
+                    ) | models.Q(
+                        end_at__year=year_int,
+                        end_at__month=month_int
+                    ) | models.Q(
+                        start_at__lte=month_end,
+                        end_at__gte=month_start
+                    )
+                )
+            except (ValueError, TypeError):
+                pass
         return qs.select_related("city", "organization").prefetch_related("categories")
 
     def get_permissions(self):
@@ -51,11 +84,17 @@ class EventViewSet(viewsets.ModelViewSet):
             return [IsOwnerOrModerator()]
         return super().get_permissions()
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context["request"] = self.request
+        return context
+
     def perform_create(self, serializer):
-        serializer.save(status=Event.EventStatus.DRAFT, created_by=self.request.user)
+        # При создании события сразу отправляем на модерацию
+        serializer.save(status=Event.EventStatus.PENDING, created_by=self.request.user)
 
     @action(detail=True, methods=["post"])
-    def register(self, request, pk=None):
+    def register(self, request, slug=None):
         event = self.get_object()
         registration, _ = EventRegistration.objects.get_or_create(event=event, user=request.user)
         registration.status = EventRegistration.RegistrationStatus.REGISTERED
@@ -63,7 +102,7 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response({"status": registration.status})
 
     @action(detail=True, methods=["post"])
-    def cancel_registration(self, request, pk=None):
+    def cancel_registration(self, request, slug=None):
         event = self.get_object()
         try:
             registration = EventRegistration.objects.get(event=event, user=request.user)
@@ -80,7 +119,7 @@ class EventViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=["post"])
-    def moderate(self, request, pk=None):
+    def moderate(self, request, slug=None):
         if not request.user.is_moderator:
             return Response(status=status.HTTP_403_FORBIDDEN)
         event = self.get_object()
