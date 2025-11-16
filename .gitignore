@@ -2,6 +2,7 @@
 __pycache__/
 *.py[cod]
 *$py.class
+ml/data/
 
 # Django
 db.sqlite3
@@ -20,3 +21,4 @@ node_modules/
 dist/
 build/
 
+ml/models

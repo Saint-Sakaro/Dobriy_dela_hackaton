@@ -6,4 +6,12 @@ psycopg[binary]==3.2.12
 django-cors-headers==4.4.0
 dj-database-url==2.1.0
 requests==2.31.0
-
+easyocr==1.7.2
+faiss_cpu==1.12.0
+fitz==0.0.1.dev2
+numpy==2.3.4
+pymorphy2==0.9.1
+pytest==9.0.1
+python_docx==1.2.0
+reportlab==4.4.4
+sentence_transformers==5.1.2
