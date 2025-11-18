@@ -5,6 +5,9 @@
 ## Ссылка на презентацию
 https://docs.google.com/presentation/d/1cfMCtkNJFyM0z8-QXqs-2djn4Uff2EGe/edit?usp=sharing&ouid=103650434151574930377&rtpof=true&sd=true
 
+## Ссылка на сайт
+https://ct229964.tw1.ru
+
 ## 🚀 Быстрый старт
 
 ### Требования
